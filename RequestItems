@@ -1,0 +1,167 @@
+<template>
+  <v-app>
+    <v-card
+    style="height: 100%;"
+  >
+    <v-toolbar
+      color="#ed1941"
+      dark
+      dense
+      fixed
+      style="position: fixed;
+  top: 0;
+  left: 0;right: 0;"
+    >
+      <v-icon>mdi-clipboard-list-outline</v-icon>
+      <v-toolbar-title class="ml-5">叫货单确认</v-toolbar-title>
+      <v-spacer></v-spacer>
+    </v-toolbar>
+    <v-card-text class="mt-12">
+      <v-alert
+      dense
+      text
+      type="success"
+    >
+    {{ this.requestNo }}
+    </v-alert>
+    <v-divider style="margin-top: 20px;"></v-divider>
+      <v-data-table
+        :headers="header"
+        :items="result"
+        :hide-default-footer="isMobile"
+        fixed-header
+        height="450"
+        :items-per-page="1000"
+        >
+        <template v-slot:[`item.GoodID`]="{ item }">
+          <v-btn color="cyan" @click="remove(item)" small text dense>
+            <v-icon dense color="error">mdi-delete-forever-outline</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
+      <v-bottom-navigation
+      absolute
+      hide-on-scroll
+      horizontal
+      scroll-target="#scroll-threshold-example"
+      scroll-threshold="500"
+      color="teal"
+      grow
+    >
+      <v-btn @click="clear()">
+        <span>清空叫货</span>
+        <v-icon color="error">mdi-delete-circle-outline</v-icon>
+      </v-btn>
+      <v-btn @click="confirm()">
+        <span>确认叫货</span>
+        <v-icon color="success">mdi-check-circle-outline</v-icon>
+      </v-btn>
+    </v-bottom-navigation>
+    </v-card-text>
+  </v-card>
+  <v-dialog
+      v-model="dialog"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="text-h6">
+          <v-icon class="mr-5" color="success">mdi-cloud-question</v-icon>  确认
+        </v-card-title>
+
+        <v-card-text>
+          {{text}}
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="green darken-1"
+            text
+            @click="doAction()"
+          >
+            是
+          </v-btn>
+
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialog = false"
+          >
+            否
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-app>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      result: [
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '2', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' },
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '1', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' },
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '1', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' },
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '1', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' },
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '1', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' },
+        {GoodID: '1', GoodName: '1', Qty: '2', AddBtn: '3', Unit: '包'  },
+        {GoodID: '1', GoodName: '221', Qty: '3', AddBtn: '3', Unit: '箱' },
+        {GoodID: '1', GoodName: '1', Qty: '4', AddBtn: '3', Unit: '盒' }
+      ],
+      header: [
+      { text: '', value: 'GoodID', sortable: false },
+      { text: '商品', value: 'GoodName', sortable: false },
+        { text: '数量', value: 'Qty', sortable: false },
+        { text: '单位', value: 'Unit', sortable: false }
+      ],
+      isMobile: false,
+      chooseQty: '0',
+      requestNo: 'A20240606001',
+      dialog: false,
+      action: '',
+      text: '',
+
+    }    
+  },
+  created() {
+    this.checkDevice()
+  },
+  methods: {
+    checkDevice() {
+      if (window.innerWidth < 768) {
+        this.isMobile = true
+      } else {
+        this.isMobile = false
+      }
+    },
+    remove(item) {
+    },
+    clear() {
+      this.dialog = true
+      this.action = 'clear'
+      this.text = '是否全部清空?'
+    },
+    confirm() {
+      this.dialog = true
+      this.action = 'confirm'
+      this.text = '是否确认叫货?'
+    },
+    doAction() {
+      if(this.action === 'clear') {
+      } else if (this.action === 'confirm') {
+      }
+    }
+  }
+}
+</script>
