@@ -1,0 +1,118 @@
+<template>
+  <v-app>
+    <v-app-bar
+      dense
+      absolute
+      color="#ed1941"
+      elevate-on-scroll
+      scroll-target="#scrolling-techniques-7"
+      dark
+    >
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-toolbar-title>商品出库/删除</v-toolbar-title>
+    </v-app-bar>
+  <v-sheet
+      id="scrolling-techniques-7"
+      class="overflow-y-auto"
+      max-height="600"
+    >
+      <v-container height="450">
+    <v-card>
+    <v-card-text class="mt-12">
+        <v-text-field
+        dense
+            label="货架"
+            outlined
+          ></v-text-field>
+        <v-text-field
+        dense
+            label="商品"
+            outlined
+          ></v-text-field>
+    <v-divider style="margin-top: 0px;margin-bottom: 20px;"></v-divider>
+    <v-icon dense small>mdi-focus-field</v-icon>当前扫描商品
+    <h1 style="margin-top: 20px;font-family:Arial, Helvetica, sans-serif; font-style: italic;">当前扫描商品</h1>
+    <h1 style="margin-top: 30px;font-family:Arial, Helvetica, sans-serif;">1盒</h1>
+    </v-card-text>
+  </v-card>
+      </v-container>
+    </v-sheet>
+      <v-bottom-navigation
+      absolute
+      hide-on-scroll
+      horizontal
+      scroll-target="#scroll-threshold-example"
+      scroll-threshold="500"
+      color="teal"
+      grow
+    >
+      <v-btn @click="clear()">
+        <span>删除商品</span>
+        <v-icon color="error">mdi-delete-circle-outline</v-icon>
+      </v-btn>
+      <v-btn @click="confirm()">
+        <span>清空页面信息</span>
+        <v-icon color="error">mdi-close-circle-outline</v-icon>
+      </v-btn>
+    </v-bottom-navigation>
+  <v-dialog
+      v-model="dialog"
+      max-width="290"
+    >
+      <v-card>
+        <v-card-title class="text-h6">
+          <v-icon class="mr-5" color="success">mdi-cloud-question</v-icon>  确认
+        </v-card-title>
+
+        <v-card-text>
+          {{text}}
+        </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+
+          <v-btn
+            color="green darken-1"
+            text
+            @click="doAction()"
+          >
+            是
+          </v-btn>
+
+          <v-btn
+            color="green darken-1"
+            text
+            @click="dialog = false"
+          >
+            否
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </v-app>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      isMobile: false,
+      chooseQty: '0',
+      requestNo: 'A20240606001',
+      text: '',
+      dialog: false
+    }    
+  },
+  created() {
+    this.checkDevice()
+  },
+  methods: {
+    checkDevice() {
+      if (window.innerWidth < 768) {
+        this.isMobile = true
+      } else {
+        this.isMobile = false
+      }
+    }
+  }
+}
+</script>
