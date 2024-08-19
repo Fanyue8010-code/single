@@ -1,0 +1,139 @@
+<template>
+  <v-app>
+    <v-navigation-drawer v-model="showMenu" width="300px"
+        :absolute="ShowFullMenu ? false : true"
+        :temporary="ShowFullMenu ? false : true"
+        :app="ShowFullMenu ? false : false"
+        class="longPageBar"
+        >
+        <v-card
+    class="mx-auto"
+    max-width="500"
+    dense
+  >
+    <v-toolbar
+      color="teal"
+      dark
+      dense
+    >
+
+      <v-toolbar-title 
+      dense>Topics</v-toolbar-title>
+
+      <v-spacer></v-spacer>
+
+      <v-btn icon>
+        <v-icon>mdi-dots-vertical</v-icon>
+      </v-btn>
+    </v-toolbar>
+
+    <v-list 
+    dense>
+      <v-list-group
+        v-for="item in items"
+        :key="item.title"
+        v-model="item.active"
+        :prepend-icon="item.action"
+        no-action
+      >
+        <template v-slot:activator>
+          <v-list-item-content>
+            <v-list-item-title v-text="item.title"></v-list-item-title>
+          </v-list-item-content>
+        </template>
+
+        <v-list-item
+          v-for="child in item.items"
+          :key="child.title"
+           @click="goPage(child)"
+        >
+          <v-list-item-content>
+            <v-icon>{{child.icon}}</v-icon>
+            <v-list-item-title v-text="child.title"></v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list-group>
+    </v-list>
+  </v-card>
+    </v-navigation-drawer>
+    <v-app-bar
+      dense
+      absolute
+      color="#ed1941"
+      elevate-on-scroll
+      scroll-target="#scrolling-techniques-7"
+      dark app>
+      <v-app-bar-nav-icon dense app @click="showMenu=!showMenu">
+        <v-icon dense color="#00ACBB">mdi-apps</v-icon>
+      </v-app-bar-nav-icon>
+      <v-toolbar-title>{{title}}</v-toolbar-title>
+    </v-app-bar>
+    <v-main app
+          id="mainForm">
+      <v-container fluid>
+        <router-view></router-view>
+      </v-container>
+    </v-main>
+  </v-app>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      showMenu: false,
+      title: '',
+      items: [
+        {
+          action: 'mdi-ticket',
+          items: [{ title: '商品添加', link: '/GoodBasicPage' }],
+          title: '商品管理'
+        },
+        {
+          action: 'mdi-silverware-fork-knife',
+          items: [
+            { title: '貨物上架', link: '/Shelf' },
+            { title: '貨物下架', link: '/OffShelf' },
+            { title: 'Sushi' },
+          ],
+          title: '貨架管理',
+        },
+        {
+          action: 'mdi-school',
+          items: [{ title: 'List Item' }],
+          title: 'Education',
+        },
+        {
+          action: 'mdi-human-male-female-child',
+          items: [{ title: 'List Item' }],
+          title: 'Family',
+        },
+        {
+          action: 'mdi-bottle-tonic-plus',
+          items: [{ title: 'List Item' }],
+          title: 'Health',
+        },
+        {
+          action: 'mdi-briefcase',
+          items: [{ title: 'List Item' }],
+          title: 'Office',
+        },
+        {
+          action: 'mdi-tag',
+          items: [{ title: 'List Item' }],
+          title: 'Promotions',
+        },
+      ]
+    }
+  },
+  methods: {
+    goPage(item) {
+      this.showMenu = !this.showMenu
+      this.title = item.title
+      this.$router.push({
+        path: item.link,
+        query: ''
+      })
+    }
+  }
+}
+</script>
