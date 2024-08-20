@@ -23,6 +23,7 @@
           label="用户名"
           outlined
           dense
+          color="success"
         ></v-text-field>
         <v-text-field
           required
@@ -36,13 +37,12 @@
         ></v-text-field>
       </v-card-text>
       <v-btn
-      large
-      outlined
+          large
           @click="goEp"
-          style="width: 100%;"
-          color="success"
+          style="width: 98%; padding: 25px; margin-top: 50px; border-top-left-radius: 50px; border-bottom-right-radius: 50px;"
+          color="error"
         >
-          登录<v-icon small>mdi-arrow-right-circle-outline</v-icon>
+          登錄<v-icon small>mdi-arrow-right-circle-outline</v-icon>
         </v-btn>
     </v-card>
       </v-container>
@@ -104,7 +104,7 @@ export default {
       })
     },
     getBackgroundColor () {
-      return 'radial-gradient(#FFFBE6,#90d7ec)'
+      return 'radial-gradient(#FFFBE6,#FFFBE6,#f8aba6)'
     }
   }
 }
