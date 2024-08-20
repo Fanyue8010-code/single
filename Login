@@ -1,0 +1,111 @@
+<template>
+  <v-app>
+    <v-container style="height: 100%;" :style="{'background-image':getBackgroundColor()}">
+      <v-card
+      class="mx-auto"
+      height="0"
+      style="background-color: transparent; margin-top: 50px;"
+    >
+      <v-card-title style="text-align:left">
+        <v-img
+        height="50px"
+        contain
+        src="../../public/static/img/logo1.png">
+        </v-img>
+        <span style="text-align:center; width:100%; font-size:13px;">赵一鸣零食保利上河雅颂店</span>
+        <span style="text-align:center; width:100%; margin-top:3%; font-size:25px; font-weight:bolder;">商品管理系统</span>
+      </v-card-title>
+      <v-card-text>
+        <v-text-field
+          v-model="id"
+          prepend-icon="mdi-account"
+          shaped
+          label="用户名"
+          outlined
+          dense
+        ></v-text-field>
+        <v-text-field
+          required
+          v-model="pwd"
+          prepend-icon="mdi-form-textbox-password"
+          shaped
+          label="密碼"
+          color="success"
+          outlined
+          dense
+        ></v-text-field>
+      </v-card-text>
+      <v-btn
+      large
+      outlined
+          @click="goEp"
+          style="width: 100%;"
+          color="success"
+        >
+          登录<v-icon small>mdi-arrow-right-circle-outline</v-icon>
+        </v-btn>
+    </v-card>
+      </v-container>
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="timeout"
+      :value="true"
+      top
+      centered
+      shaped
+      color="red accent-2"
+    >
+      {{ text }}
+    </v-snackbar>
+  </v-app>
+</template>
+<script>
+import { test } from '@/api/api.js'
+export default {
+  data() {
+    return {
+      id: '',
+      pwd: '',
+      pda_id: '',
+      snackbar: false,
+      timeout: 3000,
+      text: ''
+    }
+  },
+  created() {
+    this.Test()
+    this.pda_id = 'PDA_001'
+  },  
+  methods: {
+    async Test () {
+      const resp = await test1()
+    },
+    goEp() {
+      var isPast = true
+      if (this.id.trim() === '') {
+        isPast = false
+        this.text = '请填写工號'
+      } else if (this.pwd.trim() === '') {
+        isPast = false
+        this.text = '请填写密碼'
+      }
+      if(!isPast){
+        this.snackbar = true
+        return false        
+      }
+      const param = {
+        Name: this.uName,
+        CardNo: this.uCardNo,
+        PhoneNo: this.uPhoneNo
+      }
+      this.$router.push({
+        path: '/EPInfo',
+        query: param
+      })
+    },
+    getBackgroundColor () {
+      return 'radial-gradient(#FFFBE6,#90d7ec)'
+    }
+  }
+}
+</script>
