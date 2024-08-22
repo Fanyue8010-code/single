@@ -2,14 +2,35 @@
   <v-app>
   <input type="file" accept="image/*" capture="camera" id="photoInput"/>
   <img id="photoImg" alt="照片显示区域"/>
+  <div><v-file-input v-model="file" label="选择照片" @change="handleFileChange"></v-file-input><v-btn @click="fileUpload()">上传</v-btn></div>
   </v-app>
 </template>
 <script>
 export default {
+  data() {
+    return {
+      file: ''
+    }
+  },
   mounted() {
     this.camert()
   },
   methods: {
+    fileUpload: function() {
+      this.loading = true
+      // 上傳圖片 STA
+      var formData = new FormData()
+      var url = 'Lesson' + '/CN-TJ/111'
+      formData.append('url', url)
+      formData.append('del', false)
+      formData.append('file', this.file)
+      this.fileName = this.filename
+      var resp = uploadFile(formData)
+      console.log('1' + JSON.stringify(resp))
+      this.loading = false
+      // 上傳圖片 EN
+      // this.getFile()
+    },
     camert() {
       // 获取input和img元素
       const photoInput = document.getElementById('photoInput')
