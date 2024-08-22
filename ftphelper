@@ -11,9 +11,9 @@ namespace api.Helper
 {
     public class FTPHelper
     {
-        public static string strFtpPath = @"ftp://10.140.192.101/";
-        public static string strUser = @"dpm801\ftpuser";
-        public static string strPwd = "!QAZxsw2@liteon";
+        public static string strFtpPath = @"ftp://192.168.192.101/";
+        public static string strUser = @"aaa801\ftpuser";
+        public static string strPwd = "!QAZxsw2@";
 
         public static bool CheckFtp()
         {
