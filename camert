@@ -1,0 +1,32 @@
+<template>
+  <v-app>
+  <input type="file" accept="image/*" capture="camera" id="photoInput"/>
+  <img id="photoImg" alt="照片显示区域"/>
+  </v-app>
+</template>
+<script>
+export default {
+  mounted() {
+    this.camert()
+  },
+  methods: {
+    camert() {
+      // 获取input和img元素
+      const photoInput = document.getElementById('photoInput')
+      const photoImg = document.getElementById('photoImg')
+      // 监听input元素的change事件
+      photoInput.addEventListener('change', function(event) {
+        // 获取选择的照片文件
+        const file = event.target.files[0]
+        // 使用FileReader对象读取文件内容
+        const reader = new FileReader()
+        reader.onload = function(event) {
+          // 将读取到的照片内容赋值给img元素的src属性
+          photoImg.src = event.target.result
+        }
+        reader.readAsDataURL(file)
+      })
+    }
+  }
+}
+</script>
