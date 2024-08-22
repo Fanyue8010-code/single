@@ -1,0 +1,46 @@
+[HttpPost]
+public HttpResponseMessage UploadFile()
+{
+    var file = HttpContext.Current.Request.Files[0];
+    //string strActionType = HttpContext.Current.Request.Form["ActionType"];
+    //string strSite = HttpContext.Current.Request.Form["Site"];
+    //string strGuid = HttpContext.Current.Request.Form["Guid"];
+    //string strLine = HttpContext.Current.Request.Form["LineCode"];
+    //string strWorkShop = HttpContext.Current.Request.Form["WorkShop"];
+    //string strStep = HttpContext.Current.Request.Form["Step"];
+    //string strDate = HttpContext.Current.Request.Form["Date"];
+    //string strFtpPath = "Kpi/" + strActionType + "/" + strSite + "/" + strLine + "/" + strWorkShop + "/" + strStep + "/" + strDate + "/" + strGuid;
+
+    bool isCheckFtp = FTPHelper.CheckFtp();
+    string strFtpPath = HttpContext.Current.Request.Form["url"];
+    string strDelete = HttpContext.Current.Request.Form["del"];
+    string[] arrPath = strFtpPath.Split('/');
+    if (arrPath.Length > 0)
+    {
+        string strPart = string.Empty;
+        foreach (string strPath in arrPath)
+        {
+            strPart += strPath + "/";
+            if(strPath.Split('-').Length == 5)
+            {
+                string[] list = FTPHelper.GetFileList(FTPHelper.strFtpPath + strPart);
+                if(strDelete == "true" && list.Length > 0)
+                {
+                    FTPHelper.Delete(FTPHelper.strFtpPath + strPart + list[0]);
+                }
+            }
+            if(!FTPHelper.DirectoryExists(FTPHelper.strFtpPath + strPart))
+            {
+                FTPHelper.MakeDirectory(FTPHelper.strFtpPath + strPart);
+            }
+        }
+    }
+
+    if (isCheckFtp)
+    {
+        FTPHelper.Upload(file, strFtpPath);
+    }
+    strJson = JsonConvert.SerializeObject(new { success = 0, errmsg = strFtpPath });
+    HttpResponseMessage msg = new HttpResponseMessage { Content = new StringContent(strJson, Encoding.GetEncoding("UTF-8"), "application/json") };
+    return msg;
+}
