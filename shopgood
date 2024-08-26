@@ -1,0 +1,260 @@
+<template>
+  <v-app>
+   <v-card style="height: 100%;">
+    <v-card-text>
+       <v-row>
+        <v-col cols="12" sm="3">
+        <v-combobox
+          v-model="goodID"
+          :items="items"
+          label="商品"
+          outlined
+          chips
+          dense
+        >
+          <template v-slot:selection="data">
+            <v-chip
+              :key="JSON.stringify(data.item)"
+              v-bind="data.attrs"
+              :input-value="data.selected"
+              :disabled="data.disabled"
+              @click:close="data.parent.selectItem(data.item)"
+            >
+              <v-avatar
+                class="accent white--text"
+                left
+                v-text="data.item.slice(0, 1).toUpperCase()"
+              ></v-avatar>
+              {{ data.item }}
+            </v-chip>
+          </template>
+        </v-combobox>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-select
+          v-model="qty"
+          :items="['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']"
+          label="个数"
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-select
+          v-model="unit"
+          :items="['个','袋','瓶', '盒', '箱']"
+          label="单位"
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-text-field
+            v-model="spec"
+            label="每份规格"
+            value=""
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="2">
+          <v-select
+          v-model="exp"
+          :items="['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']"
+          label="保质期"
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="1">
+          <v-select
+          v-model="expUnit"
+          :items="['天', '月', '年']"
+          label=""
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-select
+          v-model="save"
+          :items="['常温', '冷藏', '冷冻']"
+          label="储存方式"
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-text-field
+            v-model="price"
+            label="售价"
+            value="10.00"
+            prefix="￥"
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+       </v-row>
+       <v-row>
+        <v-card-title class="mb-2"><v-icon color="success">mdi-shield-crown-outline</v-icon>顾客权益</v-card-title>
+       </v-row>
+       <v-divider color="success"></v-divider>
+       <v-row>
+        <v-col cols="12" sm="3">
+          <v-checkbox
+              v-model="sevenDay"
+              label="7天无理由退货"
+              color="success"
+              value="success"
+              hide-details
+              dense
+            ></v-checkbox>
+        </v-col>
+        <v-col cols="12" sm="12">
+          <v-text-field
+          v-model="sevenDayTxt"
+            label=""
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-divider></v-divider>
+       <v-row>
+        <v-col cols="12" sm="3">
+          <v-checkbox
+              v-model="refund"
+              label="闪电退款"
+              color="success"
+              value="success"
+              hide-details
+              dense
+            ></v-checkbox>
+        </v-col>
+        <v-col cols="12" sm="12">
+          <v-text-field
+            v-model="refundTxt"
+            label=""
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-divider></v-divider>
+       <v-row>
+        <v-col cols="12" sm="3">
+          <v-checkbox
+              v-model="noGood"
+              label="缺货退"
+              color="success"
+              value="success"
+              hide-details
+              dense
+            ></v-checkbox>
+        </v-col>
+        <v-col cols="12" sm="12">
+          <v-text-field
+            v-model="noGoodTxt"
+            label=""
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+      </v-row>
+      <v-divider color="success"></v-divider>
+    </v-card-text>
+    <v-card-actions class="mr-10">
+      <v-row 
+      justify="end"
+      align="center">
+        <v-btn dense color="success" @click="save()">
+          <v-icon dense>mdi-content-save</v-icon>保存
+        </v-btn>
+        <v-btn dense color="error" class="ml-10" @click="init()">
+          <v-icon dense>mdi-delete-outline</v-icon>清空
+        </v-btn>
+      </v-row>
+    </v-card-actions>
+  </v-card>
+  </v-app>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      isMobile: false,
+      goodID: '',
+      qty: '',
+      unit: '个',
+      spec: '',
+      exp: '1',
+      expUnit: '天',
+      save: '常温',
+      price: '',
+      sevenDay: '',
+      refund: '',
+      noGood: '',
+      sevenDayTxt: '商品满足退货条件(如包装未拆)且不影响二次销售,可申请7天无理由退货.',
+      refundTxt: '诚信用户申请退款,经平台审核退款通过后,享受闪电退款到账服务.',
+      noGoodTxt: '购买后如发生商家缺货,平台及时给您办理退款.'
+    }    
+  },
+  created() {
+    this.checkDevice()
+  },
+  methods: {
+    checkDevice() {
+      if (window.innerWidth < 768) {
+        this.isMobile = true
+      } else {
+        this.isMobile = false
+      }
+    },
+    init() {
+      this.goodID = ''
+      this.qty = ''
+      this.unit = '个'
+      this.spec = ''
+      this.exp = '1'
+      this.expUnit = '天'
+      this.save = '常温'
+      this.price = ''
+      this.sevenDay = false
+      this.refund = false
+      this.noGood = false
+    },
+    async save(){
+      if (this.goodID === '') {
+        this.$messageBox.error('请选择商品')
+        return
+      }
+      if(this.qty === ''){
+        this.$messageBox.error('请填写个数')
+        return
+      }
+      if(this.price === ''){
+        this.$messageBox.error('请填写售价')
+        return
+      }
+      const para = {
+        GoodID: this.goodID,
+        Quantity: this.qty,
+        Unit: this.unit,
+        Spec: this.spec,
+        Exp: this.exp,
+        ExpUnit: this.expUnit,
+        Save: this.save,
+        Price: this.price
+      }
+      const resp = await SaveShopGood(para)
+      alert(JSON.stringify(resp))
+      if(resp.data.success === 0) {
+        this.$messageBox.error(resp.data.errmsg)
+        return
+      }
+      this.$messageBox.success('保存成功')
+      this.init()
+    }
+  }
+}
+</script>
