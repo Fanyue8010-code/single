@@ -1,53 +1,589 @@
 <template>
-  <v-app>
-  <input type="file" accept="image/*" capture="camera" id="photoInput"/>
-  <img id="photoImg" alt="照片显示区域"/>
-  <div><v-file-input v-model="file" label="选择照片" @change="handleFileChange"></v-file-input><v-btn @click="fileUpload()">上传</v-btn></div>
-  </v-app>
-</template>
-<script>
-export default {
-  data() {
-    return {
-      file: ''
-    }
-  },
-  mounted() {
-    this.camert()
-  },
-  methods: {
-    fileUpload: function() {
-      this.loading = true
-      // 上傳圖片 STA
-      var formData = new FormData()
-      var url = 'Lesson' + '/CN-TJ/111'
-      formData.append('url', url)
-      formData.append('del', false)
-      formData.append('file', this.file)
-      this.fileName = this.filename
-      var resp = uploadFile(formData)
-      console.log('1' + JSON.stringify(resp))
-      this.loading = false
-      // 上傳圖片 EN
-      // this.getFile()
+    <v-app>
+      <v-card
+      style="height: 100%;"
+    >
+      <!-- <v-toolbar
+        color="#ed1941"
+        dark
+        dense
+        fixed
+        style="position: fixed;
+    top: 0;
+    left: 0;right: 0;"
+      >
+        <v-icon>mdi-cart-plus</v-icon>
+        <v-toolbar-title class="ml-5">商品基本信息</v-toolbar-title>
+        <v-spacer></v-spacer>
+      </v-toolbar> -->
+      <v-card-text class="mt-0">
+        <v-bottom-navigation
+        dense
+        hide-on-scroll
+        horizontal
+        scroll-target="#scroll-threshold-example"
+        scroll-threshold="500"
+        color="teal"
+        grow
+        style="margin-bottom: 20px;"
+      >
+        <v-btn @click="query()">
+          <span>查询</span>
+          <v-icon color="error">mdi-magnify</v-icon>
+        </v-btn>
+        <v-btn @click="addGood('A')">
+          <span>新增商品</span>
+          <v-icon color="success">mdi-plus</v-icon>
+        </v-btn>
+      </v-bottom-navigation>
+        <v-row align="center">
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+            >
+                <v-select
+                dense
+                :items="categoryList"
+                item-value="ID"
+                item-text="Cate"
+                label="类别"
+                outlined
+                v-model="categoryQuery"
+                ></v-select>
+            </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    dense
+                    label="商品名"
+                    outlined
+                    v-model="goodQuery"
+                ></v-text-field>
+                </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    dense
+                    label="商品条码"
+                    outlined
+                    v-model="goodBarcodeQuery"
+                ></v-text-field>
+                </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    dense
+                    label="小包装条码"
+                    outlined
+                    v-model="goodSubBarcodeQuery"
+                ></v-text-field>
+                </v-col>
+        </v-row>
+      <v-divider style="margin-top: 70px;"></v-divider>
+        <v-data-table
+          :headers="header"
+          :items="result"
+          :hide-default-footer="isMobile"
+          fixed-header
+          height="450"
+          :items-per-page="1000"
+          >
+          <template v-slot:[`item.ID`]= "{item}">
+            <v-icon
+                small
+                class="mr-2"
+                @click="edit(item, 'E')"
+                color="success"
+            >
+                mdi-pencil
+            </v-icon>
+            <v-icon
+                small
+                @click="deleteItem(item)"
+                color="error"
+            >
+                mdi-delete
+            </v-icon>
+            </template>
+            <template v-slot:[`item.CATEID`]= "{item}">
+              <span v-if="false">{{ item.CATEID }}</span>
+            </template>
+            <template v-slot:[`item.Picture`]= "{item}">
+              <!-- <v-btn v-if="item.Picture !== ''" text  color="primary" @click="openPic(item.ID)">{{item.Picture}}</v-btn> -->
+               <img v-if="item.Picture !== ''" style="width:50px; height: 60px;" :src="item.Picture" @click="openPic(item.Picture)"/>
+            </template>
+        </v-data-table>
+      </v-card-text>
+    </v-card>
+    <v-dialog
+        v-model="dialog"
+        max-width="900"
+      >
+        <v-card>
+          <v-card-title class="text-h6" dense>
+            <v-icon dense class="mr-5" color="success">mdi-plus</v-icon>  新增商品
+          </v-card-title>
+          <v-divider></v-divider>
+          <v-card-text class="mt-5">
+            <v-row align="center">
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+            >
+                <v-select
+                dense
+                label="类别"
+                outlined
+                v-model="categoryAdd"
+                :items="categoryListAdd"
+                item-value="ID"
+                item-text="Cate"
+                >
+            </v-select>
+            </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    dense
+                    label="商品名"
+                    outlined
+                    v-model="goodAdd"
+                ></v-text-field>
+                </v-col>
+                <v-col
+                    class="d-flex"
+                    cols="12"
+                    sm="3"
+                >
+                    <v-select
+                    dense
+                    :items=unit
+                    label="最大包装单位"
+                    outlined
+                    v-model="unitAdd"
+                    ></v-select>
+                </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    dense
+                    label="商品条码"
+                    outlined
+                    v-model="barcodeAdd"
+                ></v-text-field>
+                </v-col>
+                <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-switch
+                    v-model="isHasSubPack"
+                    label="是否有小包装"
+                    color="red"
+                    ></v-switch>
+                </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    :disabled="!isHasSubPack"
+                    dense
+                    label="小包装条码"
+                    outlined
+                    v-model="subBarcodeAdd"
+                ></v-text-field>
+                </v-col>
+                <v-col
+                    class="d-flex"
+                    cols="12"
+                    sm="3"
+                >
+                    <v-select
+                    :disabled="!isHasSubPack"
+                    dense
+                    :items=subUnit
+                    label="小包装单位"
+                    outlined
+                    v-model="subPackUnitAdd"
+                    ></v-select>
+                </v-col>
+            <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-text-field
+                    :disabled="!isHasSubPack"
+                    dense
+                    label="含小包装个数"
+                    outlined
+                    v-model="subPackQtyAdd"
+                ></v-text-field>
+                </v-col>
+                <v-col
+                class="d-flex"
+                cols="12"
+                sm="3"
+                >
+                <v-btn @click="open()" color="success"><v-icon dense>mdi-camera</v-icon>拍照</v-btn>
+                <input id="openCamera" type="file" @change="uploadImage" style="visibility: hidden;"/>
+                <!-- <v-btn @click="fileUpload()">上传</v-btn> -->
+                </v-col> 
+        </v-row>
+          <img id="photoImg" alt="照片" style="width: 150px; height: 200px; margin-top: 10px" src='../../../public/static/img/default.jpg'/>
+          </v-card-text>
+  
+          <v-card-actions>
+            <v-spacer></v-spacer>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="editPost()"
+            >
+              确定
+            </v-btn>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="dialog = false"
+            >
+              取消
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      
+    <v-dialog
+        v-model="dialogDel"
+        max-width="290"
+      >
+        <v-card>
+          <v-card-title class="text-h6">
+            <v-icon class="mr-5" color="success">mdi-cloud-question</v-icon>  确认
+          </v-card-title>
+  
+          <v-card-text>
+            是否删除此商品?
+          </v-card-text>
+  
+          <v-card-actions>
+            <v-spacer></v-spacer>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="doAction()"
+            >
+              是
+            </v-btn>
+  
+            <v-btn
+              color="green darken-1"
+              text
+              @click="dialogDel = false"
+            >
+              否
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-dialog v-model="dialogImg" 
+        max-width="290">
+        <img :src="imgPath"/>
+      </v-dialog>
+    </v-app>
+  </template>
+  <script>
+  import axios from 'axios';
+  import { getCategory, saveGoodBasic, getGood, delGood} from '@/api/basic.js'
+  export default {
+    data() {
+      return {
+        result: [
+        ],
+        header: [
+          { text: 'ID', value: 'ID', sortable: false },
+          { text: '', value: 'CATEID', sortable: false,  headersProps: {
+            'hide-header': true // 隐藏Email列的header
+          } },
+          { text: '类别', value: 'Category', sortable: false },
+          { text: '商品名称', value: 'GoodName', sortable: false },
+          { text: '包装单位', value: 'PackUnit', sortable: false },
+          { text: '大包装条码', value: 'PackBarcode', sortable: false },
+          { text: '是否有小包装', value: 'IsHasSubPack', sortable: false },
+          { text: '小包装单位', value: 'SubPackUnit', sortable: false },
+          { text: '小包装条码', value: 'SubPackBarcode', sortable: false },
+          { text: '含小包装个数', value: 'SubPackQty', sortable: false },
+          { text: '图片', value: 'Picture', sortable: false }
+        ],
+        isMobile: false,
+        categoryList: [],
+        categoryQuery: '',
+        goodQuery: '',
+        goodBarcodeQuery: '',
+        goodSubBarcodeQuery: '',
+        dialog: false,
+        dialogDel: false,
+        unit: ['箱', '袋'],
+        subUnit: ['盒', '瓶', '包'],
+        categoryListAdd: [],
+        categoryAdd: '',
+        goodAdd: '',
+        unitAdd: '',
+        barcodeAdd: '',
+        isHasSubPack: false,
+        subBarcodeAdd: '',
+        subPackUnitAdd: '',
+        subPackQtyAdd: '',
+        delGoodID: '',
+        action: '',
+        id: '',
+        file: '',
+        guid: '',
+        dialogImg: false,
+        imgPath: ''
+      }    
     },
-    camert() {
-      // 获取input和img元素
-      const photoInput = document.getElementById('photoInput')
-      const photoImg = document.getElementById('photoImg')
-      // 监听input元素的change事件
-      photoInput.addEventListener('change', function(event) {
-        // 获取选择的照片文件
-        const file = event.target.files[0]
-        // 使用FileReader对象读取文件内容
+    created() {
+      this.getCategory()
+      this.camera()
+    },
+    mounted() {
+      this.camert()
+    },
+    methods: {
+      open() {
+        document.getElementById('openCamera').click()
+      },
+      async openPic(path) {
+        this.imgPath = path
+        this.dialogImg = true
+      },
+      handleButtonClick() {
+        // 对按钮点击事件的处理
+        alert(2)
+      },
+      uploadImage(event) {
+        this.file = event.target.files[0];
+        const photoImg = document.getElementById('photoImg')
         const reader = new FileReader()
-        reader.onload = function(event) {
-          // 将读取到的照片内容赋值给img元素的src属性
-          photoImg.src = event.target.result
+          reader.onload = function(event) {
+            // 将读取到的照片内容赋值给img元素的src属性
+            photoImg.src = event.target.result
+          }
+          reader.readAsDataURL(this.file)
+      },
+      fileUpload: function() {
+        const formData = new FormData();
+        formData.append('image', this.file);
+        formData.append('url', 'GoodImg')
+        formData.append('guid', this.guid)
+        var baseUrl
+        if(process.env.NODE_ENV === 'development') {
+          baseUrl = 'http://' + window.location.hostname + ':44314/api/'
+        } else {
+          baseUrl = 'https://' + window.location.hostname + '/api/api/'
         }
-        reader.readAsDataURL(file)
-      })
+        axios.post(baseUrl + '/basic/uploadftp', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then(response => {
+          // 处理响应数据
+          // this.$messageBox.success(response.data)
+          console.log(response)
+        })
+        .catch(error => {
+          // 处理错误情况
+          // this.$messageBox.error(error)
+          console.log(error)
+        });
+      },
+      camert() {
+        // 获取input和img元素
+        const photoInput = document.getElementById('photoInput')
+        const photoImg = document.getElementById('photoImg')
+        // 监听input元素的change事件
+        photoInput.addEventListener('change', function(event) {
+          // 获取选择的照片文件
+          const file = event.target.files[0]
+          // 使用FileReader对象读取文件内容
+          const reader = new FileReader()
+          reader.onload = function(event) {
+            // 将读取到的照片内容赋值给img元素的src属性
+            photoImg.src = event.target.result
+          }
+          reader.readAsDataURL(file)
+        })
+      },
+      camera() {
+        document.getElementById("file_input").value = 'a'
+      },
+      showImg() {
+        var showimg = document.getElementById("showimg");
+        var imginput = document.getElementById("file_input");
+        imginput.onchange = function () {
+            var files = this.files;
+            var url = URL.createObjectURL(files[0]);
+            showimg.src=url
+        }
+      },
+        addGood(action) {
+            this.dialog = true
+            this.action = action
+            this.setInit()
+        },
+        async getCategory() {
+            const para = {
+                category: ''
+            }
+            const resp = await getCategory(para)
+            this.categoryList = []
+            this.categoryList = resp.data
+            this.categoryListAdd = resp.data
+        },
+        async editPost() {
+          if(this.categoryAdd === undefined || this.categoryAdd === '' || this.categoryAdd === null) {
+            this.$messageBox.error('请选择类别')
+            return
+          } else if (this.goodAdd === '') {
+            this.$messageBox.error('请输入商品名称')
+            return
+          } else if(this.unitAdd === undefined || this.unitAdd === '' || this.unitAdd === null) {
+            this.$messageBox.error('请选择大包装单位')
+            return
+          } else if (this.barcodeAdd === '') {
+            this.$messageBox.error('请输入商品条码')
+            return
+          } else if (this.isHasSubPack) {
+            if (this.subBarcodeAdd === '') {
+              this.$messageBox.error('请输入小包装条码')
+              return
+            } else if(this.subPackUnitAdd === '') {
+              this.$messageBox.error('请选择小包装单位')
+              return
+            } else if(this.subPackQtyAdd === '') {
+              this.$messageBox.error('请输入小包装个数')
+              return
+            }
+          }       
+          const para = {
+            Action: this.action,
+            ID: this.id,
+            CategoryID: this.categoryAdd.ID === undefined ? this.categoryAdd : this.categoryAdd.ID,
+            Name: this.goodAdd,
+            Unit: this.unitAdd,
+            Barcode: this.barcodeAdd,
+            HasSubPack: this.isHasSubPack,
+            SubPackUnit: this.subPackUnitAdd,
+            SubPackBarcode: this.subBarcodeAdd,
+            SubPackQty: this.subPackQtyAdd,
+            Picture: this.file
+          }
+          const resp = await saveGoodBasic(para)
+          if(resp.data !== '') {
+            this.guid = resp.data
+            this.$messageBox.success('保存成功')
+          }
+          this.dialog = false
+          this.fileUpload()
+          this.setInit()
+          this.query()
+        },
+        async query() {
+          const para = {
+            category: this.categoryQuery,
+            goodName: this.goodQuery,
+            barcode: this.goodBarcodeQuery,
+            subBarcode: this.goodSubBarcodeQuery
+          }
+          const resp = await getGood(para)
+          if(resp.data.success === 0) {
+            this.$messageBox.error(resp.data.errmsg)
+            this.result = []
+          } else {
+            this.result = resp.data.msg
+          }    
+        },
+        edit(item, action) {
+          this.action = action
+          this.getCategory()
+          var catID = ''
+          var catName = ''
+          for(var i = 0; i < this.categoryListAdd.length; i++){
+            if(this.categoryListAdd[i].ID === item.CATEID){
+              catID = item.CATEID
+              catName = this.categoryListAdd[i].Cate
+              break
+            }
+          }
+          const catJson = {
+            ID: catID,
+            Cate: catName
+          }
+          this.dialog = true
+          this.categoryAdd = catJson
+          this.goodAdd = item.GoodName
+          this.unitAdd = item.PackUnit
+          this.barcodeAdd = item.PackBarcode
+          this.isHasSubPack = item.IsHasSubPack === 'Y' ? true : false
+          this.subBarcodeAdd = item.SubPackBarcode
+          this.subPackUnitAdd = item.SubPackUnit
+          this.subPackQtyAdd = item.SubPackQty
+          this.id = item.ID
+        },
+        deleteItem(item) {
+          this.dialogDel = true
+          this.delGoodID = item.ID
+        },
+        async doAction() {
+          const para = {
+            id: this.delGoodID
+          }
+          const resp = await delGood(para)
+          if(resp.data !== 0) {
+            this.$messageBox.success('删除成功')
+          }
+          this.dialogDel = false
+          this.query()
+        },
+        setInit() {
+          const catJson = {
+            ID: '',
+            Cate: ''
+          }
+          this.categoryAdd = catJson
+          this.goodAdd = ''
+          this.unitAdd = ''
+          this.barcodeAdd = ''
+          this.subPackUnitAdd = ''
+          this.subBarcodeAdd = ''
+          this.subPackQtyAdd = ''
+          this.isHasSubPack = false
+        }
     }
   }
-}
-</script>
+  </script>
