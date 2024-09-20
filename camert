@@ -9,7 +9,7 @@
           <v-app-bar-nav-icon></v-app-bar-nav-icon>
           <v-toolbar-title>MRO收料</v-toolbar-title>
           <v-spacer></v-spacer>
-          <input type="file" accept="image/*" capture id="photoInput" style="visibility: hidden"/> <!--style="visibility: hidden"-->
+          <input type="file" accept="image/*" capture id="photoInput" style="visibility: hidden"/>
           <v-btn icon @click="refresh()">
             <v-icon>mdi-refresh</v-icon>
           </v-btn>
@@ -22,7 +22,7 @@
         <v-icon>mdi-camera</v-icon>
       </v-btn>
 
-      <v-btn value="favorites" @click="dialogPo=true">
+      <v-btn value="favorites" @click="openPoDialog()">
         <span>手動輸入</span>
         <v-icon>mdi-format-list-checks</v-icon>
       </v-btn>
@@ -84,12 +84,15 @@
         <v-divider></v-divider>
         <v-card-text>
           <v-text-field outlined dense class="mt-3" v-model="po"></v-text-field>
+          <v-btn @click="openTakePhoto()" v-if="fromImg===false" color="success" class="mb-2"><v-icon dense>mdi-camera</v-icon>拍照</v-btn>
+          <v-img v-if="fromImg===false" :src="imageUrl"  style="width:100%; height: 150px;"/>
+          <v-file-input v-model="image" id="takePhoto" outlined dense @change="onFileChange" style="visibility:hidden" />
         </v-card-text>
         <v-card-actions>
         <v-btn block
               color="#00ACBB"
               @click="query()"
-              style="margin-top: -30px;"
+              style="margin-top: -90px;"
             >
               確定
             </v-btn>
@@ -101,12 +104,12 @@
       v-model="dialogConfirm">
       <v-card>
         <v-card-title dense><v-icon dense>mdi-check-all</v-icon>确认</v-card-title>
+        <v-text-field style="padding:20px" outlined dense label="貨架號" v-model="shelf"></v-text-field>
         <v-divider></v-divider>
         <v-card-text>
           <v-data-table
-        :headers="confirmHeader"
-        :items="confirmResult">
-
+          :headers="confirmHeader"
+          :items="confirmResult">
           </v-data-table>
         </v-card-text>
         <v-card-actions>
@@ -128,6 +131,9 @@ import axios from '@/api/axios'
 export default{
   data () {
     return {
+      image: undefined,
+    // to save image url
+    imageUrl: "",
       imgDefault:{
       type:String ,
       default:''
@@ -161,7 +167,9 @@ export default{
       selected: [],
       whileCount: 0,
       sapNo: '',
-      file: ''
+      file: '',
+      shelf: '',
+      fromImg: false
     }
   },
   create () {
@@ -171,9 +179,80 @@ export default{
     this.camera()
   },
   methods: {
+    createImage(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        this.imageUrl = e.target.result;
+        const formData = new FormData();
+        var url = 'MRO\\Tmp'
+        formData.append('url', url)
+        formData.append('image', file);
+        formData.append('type', 'direct');
+        formData.append('po', this.po);
+        axios.post('https://10.140.193.210/Android/Liteon/UploadImgDirect', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        .then(response => {
+          // 处理响应
+        })
+        .catch(error => {
+          // 处理错误
+        })
+      };
+      reader.readAsDataURL(file);
+    },
+    onFileChange(file) {
+      if (!file) {
+        return;
+      }
+      this.createImage(file);
+    },
+    openPoDialog() {
+      this.fromImg = false
+      this.dialogPo = true
+    },
     openCamera() {
+      this.fromImg = true
       document.getElementById('photoInput').click()
     },
+    openTakePhoto() {
+      if(this.fromImg === false && this.po === '') {
+        this.$message({
+          type: 'error',
+          message: '請先填寫PO'
+        })
+        return
+      } else {
+        document.getElementById('takePhoto').click()
+      }
+    },
+    takePic() {
+      const photoInput = document.getElementById('takePhoto')
+      const photoImg = document.getElementById('poImg')
+      // 监听input元素的change事件
+      // photoInput.addEventListener('change', function(event) {
+        // 获取选择的照片文件
+        const file = event.target.files[0]
+        // 使用FileReader对象读取文件内容
+        photoInput.onchange = function() {
+          const reader = new FileReader()
+          reader.onload = function(event) {
+          photoImg.src = event.target.result
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          const img = new Image();
+            canvas.width = img.width * 0.5;
+            canvas.height = img.height * 0.5;
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            // 将读取到的照片内容赋值给img元素的src属性
+            //photoImg.src = event.target.result
+          }
+          photoImg.src = event.target.result
+          reader.readAsDataURL(file)
+        }
+  },
     camera() {
       // 获取input和img元素
       const photoInput = document.getElementById('photoInput')
@@ -223,40 +302,6 @@ export default{
           that.callRunGetPO()
         }
       };
-      // 监听input元素的change事件
-      // photoInput.addEventListener('change', function(event) {
-      //   // 获取选择的照片文件
-      //   that.file = event.target.files[0]
-      //   const file = event.target.files[0]
-      //   // 使用FileReader对象读取文件内容
-      //   const reader = new FileReader()
-      //   reader.onload = function(event) {
-      //     // 将读取到的照片内容赋值给img元素的src属性
-      //     photoImg.src = event.target.result
-      //   }
-      //   reader.readAsDataURL(file)
-      //   var formData = new FormData()
-      //   var url = 'MRO\\Tmp'
-      //   formData.append('url', url)
-      //   formData.append('file', file)
-      //   axios({
-      //     method:"post",
-      //     url:'https://10.140.193.210/Android/Liteon/UploadFile',
-      //     data:formData,
-      //     headers:{'Content-Type': 'multipart/form-data'},
-      //   }).then((res) => {
-      //       }
-      //   ).catch(err=>{
-      //     console.log(err);
-      //     alert(JSON.stringify(err))
-      //   })
-      //   that.isGetMro = true
-      //   that.callRunGetPO()
-      //   // that.getPO()
-      //   // if(that.isGetMro){
-      //   //   that.callRunGetPO()
-      //   // }
-      // })
     },
     beforeDestroy() {
       clearInterval(this.timer); // 在组件销毁前清除定时器
@@ -293,30 +338,15 @@ export default{
         this.loading = false
         await delPO()
       }
-      // if(resp.data.length === 0) {
-      //   this.beforeDestroy()
-      //   this.isGetMro = false
-      //   await delPO()
-      //   // this.getPO()
-      // } else {
-      //   this.po = resp.data.Table[0].PONO
-      //   this.dialogPo = true
-      //   // this.loading = false
-      //   // const para = {
-      //   //   PoNumber: resp.data.Table[0].PONO
-      //   // }
-      //   // const mro = await getMro(para)
-      //   // this.result = mro.data
-      //   // this.poNo = this.result[0].PoNumber
-      //   // this.plant = this.result[0].PlantID
-      //   // this.vender = this.result[0].VenderName
-      //   // this.costcenter = this.result[0].CostCenter
-      //   // this.requester = this.result[0].Requester
-      //   this.beforeDestroy()
-      //   this.isGetMro = false
-      // }
     },
     async query() {
+      if(this.fromImg === false && this.image === undefined) {
+        this.$message({
+          type: 'error',
+          message: '請選擇圖片'
+        })
+        return
+      }
       const para = {
         PoNumber: this.po
       }
@@ -341,6 +371,7 @@ export default{
       this.costcenter = this.result[0].CostCenter
       this.requester = this.result[0].Requester
       this.dialogPo = false
+      this.fromImg = false
     },
     async toSap(){
       if(this.selected.length == 0) {        
@@ -375,11 +406,19 @@ export default{
       this.dialogConfirm = true
     },
     async runToSap() {
+      if(this.shelf === '') {
+        this.$message({
+          type: 'error',
+          message: '請先輸入貨架號'
+        })
+        return
+      }
       var item = []
       for(var i = 0; i < this.confirmResult.length; i++) {
         item.push(this.confirmResult[i].PoItem)
       }
       const para = {
+        Shelf: this.shelf,
         PoNumber: this.poNo,
         chooseItem: item
       }
