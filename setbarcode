@@ -1,0 +1,100 @@
+<template>
+  <v-app>
+    <v-card>
+      <v-card-text>
+        <v-row class="mar-t-15">
+          <v-col cols="12" sm="3">
+          <v-text-field
+                outlined
+                dense
+                label="小包裝"
+                v-model="small"
+                @keydown.enter="keyup()"
+                id="small"
+              ></v-text-field>
+            <v-text-field
+                outlined
+                dense
+                label="大包裝"
+                v-model="big"
+              ></v-text-field>
+              <v-text-field
+                outlined
+                dense
+                label="商品"
+                v-model="good"
+              ></v-text-field>
+              <v-text-field
+                outlined
+                dense
+                label="大包装单位"
+                v-model="bigUnit"
+              ></v-text-field>
+              <v-text-field
+                outlined
+                dense
+                label="小包装单位"
+                v-model="smallUnit"
+              ></v-text-field>
+              <v-text-field
+                outlined
+                dense
+                label="小包装个数"
+                v-model="smallQty"
+              ></v-text-field>
+              <v-text-field
+                outlined
+                dense
+                label="ID"
+                v-model="id"
+              ></v-text-field>
+          </v-col>
+        </v-row>
+        <v-row>
+          <v-col cols="12" sm="3">
+            <v-btn color="error" @click="init()">清空</v-btn>
+            <v-btn color="success" style="margin-left: 20px;" @click="upd()">更新</v-btn>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+  </v-app>
+</template>
+<script>
+export default {
+  data() {
+    return {
+      small: '',
+      big: '',
+      good: '',
+      bigUnit: '',
+      smallUnit: '',
+      smallQty: '',
+      id: ''
+    }
+  },
+  methods: {
+    init() {
+      this.small = ''
+      this.big = ''
+      this.good = ''
+      this.bigUnit = ''
+      this.smallUnit = ''
+      this.smallQty = ''
+      this.id = ''
+      document.getElementById('small').focus()
+    },
+    async upd() {
+      if(this.small === undefined || this.small === '' || this.big === undefined || this.big === '' || this.id === '') {
+        return
+      }
+      this.init()
+    },
+    async keyup() {
+      if(this.small === undefined || this.small === '') {
+        return
+      }
+    }
+  }
+}
+</script>
