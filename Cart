@@ -1,0 +1,183 @@
+<template>
+  <v-app>
+   <v-card style="">
+    <v-card-text>
+       <v-row>
+        <v-col cols="12" sm="3">
+          <v-text-field
+            v-model="orderNo"
+            label="订单号"
+            value=""
+            outlined
+            dense
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" sm="3">
+          <v-select
+          v-model="status"
+          :items="['已完成', '待付款', '待发货', '待收货', '取消订单/退款']"
+          label="状态"
+          outlined
+          dense
+        ></v-select>
+        </v-col>
+        <v-col cols="12" sm="3">
+        <v-combobox
+          v-model="category"
+          :items="itemCategory"
+          label="商品分类"
+          outlined
+          chips
+          dense
+        >
+          <template v-slot:selection="data">
+            <v-chip
+              :key="JSON.stringify(data.item)"
+              v-bind="data.attrs"
+              :input-value="data.selected"
+              :disabled="data.disabled"
+              @click:close="data.parent.selectItem(data.item)"
+            >
+              <v-avatar
+                class="accent white--text"
+                left
+                v-text="data.item.slice(0, 1).toUpperCase()"
+              ></v-avatar>
+              {{ data.item }}
+            </v-chip>
+          </template>
+        </v-combobox>
+        </v-col>
+          <v-col cols="9" sm="3">
+            <v-menu
+              ref="menu1"
+              v-model="menu1"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              max-width="290px"
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-model="Start"
+                  label="时间开始"
+                  outlined
+                  dense
+                  v-bind="attrs"
+                  v-on="on"
+                  @click="reset(1,DateFrom)"
+                  error
+                  append-icon="mdi-lead-pencil"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="DateFrom"
+                @input="menu1 = false"
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+          <v-col cols="9" sm="3">
+            <v-menu
+              ref="menu2"
+              v-model="menu2"
+              :close-on-content-click="false"
+              transition="scale-transition"
+              offset-y
+              max-width="290px"
+              min-width="auto"
+            >
+              <template v-slot:activator="{ on, attrs }">
+                <v-text-field
+                  v-model="End"
+                  label="时间结束"
+                  outlined
+                  dense
+                  v-bind="attrs"
+                  v-on="on"
+                  @click="reset(2,DateTo)"
+                  error
+                  append-icon="mdi-lead-pencil"
+                ></v-text-field>
+              </template>
+              <v-date-picker
+                v-model="DateTo"
+                @input="menu2 = false"
+              ></v-date-picker>
+            </v-menu>
+          </v-col>
+       </v-row>
+      <v-divider color="success"></v-divider>
+    </v-card-text>
+    <v-card-actions class="mr-10">
+      <v-row 
+      justify="end"
+      align="center">
+        <v-btn dense color="success" @click="query()">
+          <v-icon dense>mdi-content-save</v-icon>保存
+        </v-btn>
+      </v-row>
+    </v-card-actions>
+  </v-card>
+  <v-data-table
+  :headers="header"></v-data-table>
+  </v-app>
+</template>
+<script>
+import moment from 'moment'
+export default {
+  data() {
+    return {
+      orderNo: '',
+      status: '',
+      category: '',
+      DateTo: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substring(0, 10),
+      DateFrom: (new Date(Date.now() - (new Date()).getTimezoneOffset() * 60000)).toISOString().substring(0, 10),
+      menu1: false,
+      menu2: false,
+      result: [],
+      header: [
+        { text: 'PLANT', value: 'PLANT', sortable: false }
+      ]
+    }    
+  },
+  created() {
+  },
+  computed: {
+    End () {
+      return this.formatDate(this.DateTo)
+    },
+    Start () {
+      return this.formatDate(this.DateFrom)
+    }
+  },
+  methods: {
+    async query(){
+      if(this.Start === undefined || this.Start === '' || this.End === undefined || this.End === '') {
+        alert('选择时间')
+      }
+      const dStart = new Date(this.Start)
+      const dEnd = new Date(this.End)
+      if (dStart > dEnd) {
+        alert('>')
+      }
+    },
+    reset (num, Date) {
+      if (num === 2) {
+        this.DateTo = moment(String(Date)).format('YYYY-MM-DD')
+      } else {
+        this.DateFrom = moment(String(Date)).format('YYYY-MM-DD')
+      }
+    },
+    formatDate (date) {
+      if (date.includes('-')) {
+        const [year, month, day] = date.split('-')
+        return `${year}-${month}-${day}`
+      } else {
+        const [year, month, day] = date.split('/')
+        return `${year}-${month}-${day}`
+      }
+    }
+  }
+}
+</script>
